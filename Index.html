@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Visually Impaired Website UI</title>
+  <style >
+header {
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  padding: 20px;
+}
+.ctrl_btn { 
+  display: flex;
+  margin : 0;
+  padding : 20px 40px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 20px;
+  color: #fff;
+  background-color: #e1306c;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.btn {
+  padding : 20px 40px;
+  width : 100%;
+  position:fixed;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  }
+.ply {
+  width : 100%;
+}
+  </style>
+  </head>
+  <body>
+    <header>
+      <h1>VTAC : the sixth sense</h1>
+    </header>
+    <video class = "ply"  id="player" autoplay></video>
+    <div class = "btn">
+      <button class = "ctrl_btn" id="capture">Switch</button>
+      <br>
+      <button class = "ctrl_btn"> ... </button>
+    </div>
+    <canvas id="canvas" width=320 height=240></canvas>
+
+<script>
+var to_run = 0;  
+const audioContext = new AudioContext();
+function playPianoSound(note_a , time_a) {
+    return new Promise((resolve, reject) => {
+        const oscillator = audioContext.createOscillator();
+        oscillator.type = 'triangle'; 
+        oscillator.frequency.value = note_a; 
+        const gainNode = audioContext.createGain();
+        gainNode.gain.setValueAtTime(0, audioContext.currentTime); 
+        gainNode.gain.linearRampToValueAtTime(1, audioContext.currentTime + 0.1); 
+        gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.2); 
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        oscillator.start();
+        setTimeout(() => {      
+        oscillator.stop(audioContext.currentTime + (time_a * 1.0));
+        resolve();
+      }, time_a* 100);
+    });
+}
+  const player = document.getElementById('player');
+  const canvas = document.getElementById('canvas');
+  const context = canvas.getContext('2d');
+  const captureButton = document.getElementById('capture');
+  canvas.style.visibility = 'hidden';
+  const constraints = {
+  audio: false,
+  video:
+  {
+    facingMode: { exact: "environment" }
+  }
+}   
+      async function start_sound () {
+        while (to_run == 1) {
+         if ( to_run == 1 ) { 
+        context.drawImage(player, 0, 0, canvas.width, canvas.height);
+        const ctx = canvas.getContext("2d");
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const arr_red = [];
+          const arr_green = [];
+          const arr_blue = [];
+          const reps = [];
+          const equal_part =Math.round ( imageData.data.length/10 ) - 1;
+          var pixel_index = 0;
+          for (let xn = 0; xn < 10 ; xn = xn+1) { 
+          var count = 0;
+          const mnx = imageData.data.length;
+          for (let i = 0; i < equal_part; i += 4) {
+            const red = imageData.data[pixel_index];
+            const green = imageData.data[pixel_index + 1];
+            const blue = imageData.data[pixel_index+ 2];
+            pixel_index += 4;
+            var exist = 0;
+            for ( let j = 0 ; j < arr_red.length ; j = j + 1 ) {
+              if (Math.abs(red - arr_red [j] )< 10 ) {
+                if ( Math.abs( blue - arr_blue[j] )< 10 ) {
+                  if ( Math.abs( green - arr_green [j] )< 10) {
+                    exist = 1;
+                    reps [j] = reps[j] + 1;
+                  }
+                }
+              }
+            }
+            if ( exist == 0 ) {
+              arr_red [ count ] = red;
+              arr_green [ count ] = green;
+              arr_blue [ count ] = blue;
+              reps[ count ] = 1;
+              count = count + 1;
+            }
+          }
+            var index = 0;
+            var biggest = 0;
+            for ( let i = 0 ; i < reps.length ; i = i + 1 ) {
+              if ( reps [i] > biggest ) {
+                biggest = reps[i];
+                index = i ;
+              }
+            }
+            await playPianoSound(arr_red[index]*2.5, 0.5);
+            await playPianoSound(arr_green[index]*2.5,0.5);
+            await playPianoSound(arr_blue [index]*2.5,0.5);
+            await playPianoSound(0 , 0.3);
+          }
+        }
+      } }
+  captureButton.addEventListener('click', () => {
+    if ( to_run == 0 ) {
+      to_run = 1;
+      start_sound ();
+    }
+    else {
+      to_run = 0 ;
+    }
+  });   
+  navigator.mediaDevices.getUserMedia(constraints)
+    .then((stream) => {
+    player.srcObject = stream;
+  });
+    
+  </script> 
+  </body>
+</html>
