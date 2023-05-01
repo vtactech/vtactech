@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Instagram Story Maker</title>
+ <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name = “theme-color” content = “000000”>
+  <meta content='#000000' name='theme-color'/> 
+  <style>
+
+body {
+  background-image: url('https://vtactech.github.io/vtactech/bg1.jpg');
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+}
+
+.score_div {
+position : fixed ;
+top : 0px;
+width : 80%;
+left : 10%;
+background-color: orange;
+opacity: 0.7;
+}
+.score {
+left : 15%;
+position : fixed;
+color : green;
+font-size : 80px;
+font-family: "Lucida Console", "Courier New", monospace;
+}
+.help_btn {
+position : fixed;
+top : 10px;
+left : 0px;
+padding : 20px;
+font-size : 50px;
+background-color: yellow;
+opacity: 0.4;
+border-radius: 70px;
+  border-width: 20px;
+border-right : none;
+font-family: "Lucida Console", "Courier New", monospace;
+}
+.strt_btn {
+position : fixed;
+top : 100px;
+right : 0px;
+padding : 20px;
+font-size : 50px;
+background-color: green;
+opacity: 0.7;
+border-radius: 70px;
+  border-width: 20px;
+border-right : none;
+font-family: "Lucida Console", "Courier New", monospace;
+}
+.box_c {
+position : fixed ;
+width : 100%;
+left : 0px;
+bottom : 0px;
+height : 20px;
+opacity: 0.2;
+}
+.box_b {
+position : fixed ;
+width : 100%;
+left : 0px;
+bottom : 0px;
+height : 20px;
+opacity: 0.7;
+z-index: 10;
+}
+.sq_btn {
+position : fixed ;
+border-radius: 20px;
+  border-width: 20px;
+}
+#sq_btn_1
+{
+background-color: #4285F4;
+}
+#sq_btn_2
+{
+background-color: #DB4437;
+}
+#sq_btn_3
+{
+background-color: #F4B400;
+}
+#sq_btn_4
+{
+background-color: #0F9D58;
+}
+
+</style>
+</head>
+<body>
+<div class = "score_div" id = "score_div" >
+<b class = "score" id = "score"> 20 </b>
+</div>
+<button class="help_btn" id = "help_btn"  onClick = "btn_strt_exec()" > ... </button>
+
+  <button class="strt_btn" id = "strt_btn"  onClick = "btn_strt_exec()" > START </button>
+
+<div class = "box_c" id = "box_c">  </div>
+<div class = "box_b">  
+  <button class="sq_btn" id = "sq_btn_1"  onClick = "btn_1_exec()" ></button>
+    <button class="sq_btn" id = "sq_btn_2" onClick = "btn_2_exec()" ></button>
+<button class="sq_btn" id = "sq_btn_3" onClick = "btn_3_exec()" > </button>
+<button class="sq_btn" id = "sq_btn_4" onClick = "btn_4_exec()"  >
+  </div>
+  
+  <script>
+
+document.getElementById("score_div").style.visibility = "hidden";
+const screenWidth = window.innerWidth;
+const screenHeight = window.innerHeight;
+
+var btn_dim = screenWidth * 0.4;
+
+var btn_left = screenWidth * 0.1;
+var btn_left_2 = btn_dim + btn_left;
+
+var btn_bottom= screenWidth * 0.1;
+var btn_bottom_2 = btn_dim + btn_bottom;
+
+const box_c = 
+ document.getElementById("box_c");
+const box_height = screenHeight * 0.62;
+box_c.style.height = box_height + 'px';
+
+const score_div = 
+ document.getElementById("score_div");
+const score_height = screenHeight * 0.2;
+score_div.style.height = score_height + 'px';
+
+const score_txt = 
+ document.getElementById("score");
+const score_top = screenHeight * 0.2 - 90 ;
+score_txt.style.top = score_top + 'px';
+
+
+const sq_btn_1 = 
+ document.getElementById("sq_btn_1");
+const sq_btn_2 = 
+ document.getElementById("sq_btn_2");
+const sq_btn31 = 
+ document.getElementById("sq_btn_3");
+const sq_btn_4 = 
+ document.getElementById("sq_btn_4");
+
+sq_btn_1.style.width = btn_dim + 'px';
+sq_btn_2.style.width = btn_dim + 'px';
+sq_btn_3.style.width = btn_dim + 'px';
+sq_btn_4.style.width = btn_dim + 'px';
+
+sq_btn_1.style.height = btn_dim + 'px';
+sq_btn_2.style.height = btn_dim + 'px';
+sq_btn_3.style.height = btn_dim + 'px';
+sq_btn_4.style.height = btn_dim + 'px';
+
+sq_btn_1.style.left = btn_left + 'px';
+sq_btn_2.style.left = btn_left_2 + 'px';
+sq_btn_3.style.left = btn_left + 'px';
+sq_btn_4.style.left = btn_left_2 + 'px';
+
+sq_btn_1.style.bottom= btn_bottom_2+ 'px';
+sq_btn_2.style.bottom= btn_bottom_2 + 'px';
+sq_btn_3.style.bottom= btn_bottom + 'px';
+sq_btn_4.style.bottom= btn_bottom  + 'px';
+
+var to_run = 1;
+// piano sound
+const audioContext = new AudioContext();
+function playPianoSound(note_a , time_a) {
+    return new Promise((resolve, reject) => {
+        const oscillator = audioContext.createOscillator();
+        oscillator.type = 'square'; 
+        oscillator.frequency.value = note_a; 
+        const gainNode = audioContext.createGain();
+        gainNode.gain.setValueAtTime(0, audioContext.currentTime); 
+        gainNode.gain.linearRampToValueAtTime(1, audioContext.currentTime + 0.1); 
+        gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.2); 
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        oscillator.start();
+        setTimeout(() => {      
+        oscillator.stop(audioContext.currentTime + (time_a * 1.0));
+        resolve();
+      }, time_a* 100);
+    });
+}
+
+
+function getRndInteger(min, max) {
+  return Math.floor(Math.random() * (max - min) ) + min;
+}
+
+
+
+let tune_all = [ 300 , 1900 , 700 , 1200 ];
+
+
+function btn_1_exec() {         
+check ( tune_all [ 0 ] );
+    }
+
+function btn_2_exec() {       
+check ( tune_all [ 1 ] );
+    }
+
+function btn_3_exec() {           
+check ( tune_all [ 2 ] );
+    }
+
+function btn_4_exec() {              
+check ( tune_all [ 3 ] );
+    }
+
+
+
+let start = 0;
+function btn_strt_exec() {
+document.getElementById("score_div").style.visibility = "visible";
+document.getElementById("strt_btn").style.visibility = "hidden";
+document.getElementById("help_btn").style.visibility = "hidden";
+start = 1;
+play ();
+} 
+
+var current = [];
+
+async function play () {
+sq_btn_1.disabled = true ;
+sq_btn_2.disabled = true ;
+sq_btn_3.disabled = true ;
+sq_btn_4.disabled = true ;
+for ( let i = 0 ; i < 4 ; i++ ) {
+let x = Math.floor(Math.random() *  4) ;
+
+
+current [ i ] = tune_all [ x] ;
+await playPianoSound( current [ i]  ,  5);
+}
+sq_btn_1.disabled = false ;
+sq_btn_2.disabled = false ;
+sq_btn_3.disabled = false ;
+sq_btn_4.disabled = false ;
+}
+
+function change_div_color (color_x) {
+    return new Promise((resolve, reject) => {
+  box_c.style.background = color_x ;    
+score_div.style.background = color_x ;  
+        setTimeout(() => {              
+        resolve();
+      }, 2* 100);
+    });
+}
+function wait_p (color_x) {
+    return new Promise((resolve, reject) => {   
+        setTimeout(() => {              
+        resolve();
+      }, 3* 100);
+    });
+}
+let score = 20;
+
+let check_index = 0;
+
+async function check (tune) {
+if ( start == 1 ) {
+if ( tune == current [ check_index ] ) {
+playPianoSound( tune ,  5);
+document.getElementById("box_c").style.visibility = "visible";
+await change_div_color("green");
+score = score + 5;
+document.getElementById("score").innerHTML = score;
+check_index ++;
+} else {
+sq_btn_1.disabled = true ;
+sq_btn_2.disabled = true ;
+sq_btn_3.disabled = true ;
+sq_btn_4.disabled = true ;
+check_index = 0;
+score = score - 4;
+document.getElementById("score").innerHTML = score;
+await playPianoSound( tune ,  2);
+await playPianoSound( tune ,  2);
+document.getElementById("box_c").style.visibility = "visible";
+await change_div_color("red");
+await wait_p();
+play();
+}
+}
+if ( check_index == 4 ) {
+score = score + 5;
+document.getElementById("score").innerHTML = score;
+check_index = 0;
+play();
+}
+document.getElementById("box_c").style.visibility = "hidden";
+score_div.style.background = "orange" ;  
+if ( start == 0 ) {
+await playPianoSound( tune ,  2);
+}
+}
+
+</script>
+</body>
+</html>
